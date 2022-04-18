@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# Folders
+dec/pdp11/build/
