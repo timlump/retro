@@ -100,24 +100,76 @@ namespace pdp11
         unused
     };
 
+    enum class address_mode : uint8_t
+    {
+        reg = 0,
+        reg_def = 1,
+        auto_incr = 2,
+        auto_incr_def = 3,
+        auto_decr = 4,
+        auto_decr_def = 5,
+        index = 6,
+        index_def = 7
+    };
+
+    struct address
+    {
+        address() = default;
+
+        address(uint8_t value)
+        {
+            reg = value & 0x7;
+            mode = static_cast<address_mode>((value >> 3) & 0x7);
+        };
+
+        address_mode mode;
+        uint8_t reg : 3;
+    };
+
     struct decoded_instruction
     {
         operation op = operation::unused;
-    };
-
-    struct opcode_mask_instruction
-    {
-        uint16_t mask;
-        uint16_t opcode;
-        operation op;
-    };
+        // the values of these may or may no be valid depending
+        // on the operation
+        address destination;
+        address source;
+        
+        uint8_t stack : 3;
+        uint8_t branch_dest;
+    }; 
 
     class lsi11
     {
         public:
+            void execute(const decoded_instruction& instruction);
+
             static decoded_instruction decode(uint16_t instruction);
 
+            uint16_t m_registers[8];
+            uint16_t m_status;
+
         private:
+            struct opcode_mask_instruction
+            {
+                uint16_t mask;
+                uint16_t opcode;
+                operation op;
+            };
+
+            // for convenience, using old school enums 
+            // as casting will hurt readability
+            enum
+            {
+                R0 = 0,
+                R1 = 1,
+                R2 = 2,
+                R3 = 3,
+                R4 = 4,
+                R5 = 5,
+                SP = 6,
+                PC = 7
+            } reg_names; 
+
             static std::vector<opcode_mask_instruction> s_opcode_to_instruction_map;
     };
 }

@@ -3,26 +3,7 @@
 
 namespace pdp11
 {
-    /*
-    0000 0
-    0001 1
-    0010 2
-    0011 3
-    0100 4
-    0101 5
-    0110 6
-    0111 7
-    1000 8
-    1001 9
-    1010 A
-    1011 B
-    1100 C
-    1101 D
-    1110 E
-    1111 F
-    */
-
-    std::vector<opcode_mask_instruction> lsi11::s_opcode_to_instruction_map = {
+    std::vector<lsi11::opcode_mask_instruction> lsi11::s_opcode_to_instruction_map = {
         // mask, instruction, operation
         // misc instruction with non standard formats
         {0xffff, 0b000, operation::halt},
@@ -135,6 +116,17 @@ namespace pdp11
         {0xffc0, 0x8dc0, operation::move_from_processor_status}
     };
 
+    void lsi11::execute(const decoded_instruction& instruction)
+    {
+        switch(instruction.op)
+        {
+            // todo
+            
+            default:
+                std::cerr << "Unrecognised instruction" << std::endl;
+        }
+    }
+
     decoded_instruction lsi11::decode(uint16_t instruction)
     {
         decoded_instruction result;
@@ -145,6 +137,11 @@ namespace pdp11
                 break;
             }
         }
+
+        result.branch_dest = 0x00ff & instruction;
+        result.destination = address(0x007f & instruction);
+        result.source = address((instruction >> 7) & 0x7f);
+        result.stack = (instruction >> 6) & 0x7;
 
         return result;
     }
